@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,17 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer()
+    .AddOpenIdConnect(options =>
+{
+    options.Authority = builder.Configuration["OIDC:Authority"];
+    options.ClientId = builder.Configuration["OIDC:ClientId"];
+    options.ClientSecret = builder.Configuration["OIDC:ClientSecret"];
+    options.RequireHttpsMetadata = builder.Configuration.GetValue<bool>("OIDC:RequireHttpsMetaData");
+    options.SaveTokens = builder.Configuration.GetValue<bool>("OIDC:SaveTokens");
+    options.GetClaimsFromUserInfoEndpoint = builder.Configuration.GetValue<bool>("OIDC:GetClaimsFromUserEndpoint");
+    options.ResponseType = OpenIdConnectResponseType.Code;
 });
 
 var app = builder.Build();
