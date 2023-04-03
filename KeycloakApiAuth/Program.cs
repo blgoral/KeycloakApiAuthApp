@@ -24,8 +24,8 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateIssuerSigningKey = false,
-            ValidateLifetime = false,
-            RequireExpirationTime = false,
+            ValidateLifetime = true,
+            RequireExpirationTime = true,
             RequireSignedTokens = false,
         };
         options.Authority = builder.Configuration["OIDC:Authority"];
