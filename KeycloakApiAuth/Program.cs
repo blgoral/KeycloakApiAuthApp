@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,21 +13,24 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer()
-    .AddOpenIdConnect(options =>
-{
-    options.Authority = builder.Configuration["OIDC:Authority"];
-    options.ClientId = builder.Configuration["OIDC:ClientId"];
-    options.ClientSecret = builder.Configuration["OIDC:ClientSecret"];
-    options.RequireHttpsMetadata = builder.Configuration.GetValue<bool>("OIDC:RequireHttpsMetaData");
-    options.SaveTokens = builder.Configuration.GetValue<bool>("OIDC:SaveTokens");
-    options.GetClaimsFromUserInfoEndpoint = builder.Configuration.GetValue<bool>("OIDC:GetClaimsFromUserEndpoint");
-    options.ResponseType = OpenIdConnectResponseType.Code;
-});
+    {
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateIssuerSigningKey = false,
+            ValidateLifetime = false,
+            RequireExpirationTime = false,
+            RequireSignedTokens = false,
+        };
+        options.Authority = builder.Configuration["OIDC:Authority"];
+        options.RequireHttpsMetadata = builder.Configuration.GetValue<bool>("OIDC:RequireHttpsMetaData");
+    });
 
 var app = builder.Build();
 
@@ -38,6 +42,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
 
 app.UseAuthorization();
 
